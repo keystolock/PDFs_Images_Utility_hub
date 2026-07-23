@@ -11,32 +11,40 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pdfcraft-utility.ve
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Student Utility Hub & PDF Tools',
-    template: '%s | Student Utility Hub & PDF Tools',
+    default: 'Paperless - Instant File & Document Tools',
+    template: '%s | Paperless',
   },
-  description: 'Free browser-based online tools to merge, compress, convert PDFs, resize images in cm/mm/px, generate QR codes, and calculate CGPA. 100% private with zero server uploads.',
+  description: 'Compress PDFs, resize photos, convert formats, and manage documents instantly.',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
   keywords: [
+    'paperless',
+    'paperless pdf tools',
     'free pdf tools',
     'client side utility hub',
     'compress pdf online',
     'image resizer cm mm',
     'no upload document editor',
-    'student utility hub',
   ],
-  authors: [{ name: 'Utility Hub Team' }],
-  creator: 'Utility Hub',
+  authors: [{ name: 'Paperless Team' }],
+  creator: 'Paperless',
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: siteUrl,
-    title: 'Student Utility Hub & PDF Tools',
-    description: 'Free browser-based online tools to merge, compress, convert PDFs, resize images in cm/mm/px, generate QR codes, and calculate CGPA. 100% private with zero server uploads.',
-    siteName: 'Student Utility Hub',
+    title: 'Paperless - Instant File & Document Tools',
+    description: 'Compress PDFs, resize photos, convert formats, and manage documents instantly.',
+    siteName: 'Paperless',
+    images: [{ url: '/logo.png', width: 512, height: 512, alt: 'Paperless Logo' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Student Utility Hub & PDF Tools',
-    description: '100% Free, Private & Client-Side PDF and Image Processing Tools.',
+    title: 'Paperless - Instant File & Document Tools',
+    description: 'Compress PDFs, resize photos, convert formats, and manage documents instantly.',
+    images: ['/logo.png'],
   },
   alternates: {
     canonical: './',
@@ -46,9 +54,9 @@ export const metadata: Metadata = {
 const jsonLdSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  'name': 'Student Utility Hub & PDF Tools',
+  'name': 'Paperless - Instant File & Document Tools',
   'url': siteUrl,
-  'description': 'Free client-side online tools to merge, compress, convert PDFs, resize images in cm/mm/px, generate QR codes, and calculate CGPA with 100% data privacy.',
+  'description': 'Compress PDFs, resize photos, convert formats, and manage documents instantly with 100% data privacy.',
   'applicationCategory': 'UtilitiesApplication',
   'operatingSystem': 'All',
   'browserRequirements': 'Requires JavaScript',
@@ -63,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/logo.png" sizes="any" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
@@ -72,15 +81,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FileProvider>
           {/* Animated Navbar without Pricing */}
           <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex justify-between items-center">
               <Link href="/" className="hover:opacity-90 transition-opacity">
                 <div className="flex items-center gap-2">
-                  <Image src="/logo.png" alt="Paperless Logo" width={32} height={32} className="rounded-md object-contain" />
-                  <span className="font-bold text-lg text-black">Paperless</span>
+                  <Image
+                    src="/logo.png"
+                    alt="Paperless Logo"
+                    width={32}
+                    height={32}
+                    style={{ width: 'auto', height: 'auto' }}
+                    className="rounded-md object-contain"
+                    priority
+                  />
+                  <span className="font-extrabold text-xl tracking-tight text-black">Paperless</span>
                 </div>
               </Link>
               
-              {/* Horizontal Utility Navigation */}
+              {/* Mobile Quick Action Navigation Bar */}
+              <div className="flex md:hidden items-center gap-3">
+                <Link href="/tools/multi-hub" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs">
+                  ⚡ Multi-Hub
+                </Link>
+                <HeaderHistoryDrawer />
+              </div>
+
+              {/* Desktop Horizontal Utility Navigation */}
               <nav className="hidden md:flex space-x-8 text-[15px] font-semibold items-center">
                 
                 <Link href="/tools/multi-hub" className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-xl text-sm font-bold transition-all border border-blue-200 shadow-xs flex items-center gap-2">
@@ -175,7 +200,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <footer className="bg-slate-900 text-slate-400 py-10 border-t border-slate-800 mt-auto">
             <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
               <div>
-                <h3 className="text-white font-bold mb-4 text-lg">UtilityHub</h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <Image
+                    src="/logo.png"
+                    alt="Paperless Logo"
+                    width={28}
+                    height={28}
+                    style={{ width: 'auto', height: 'auto' }}
+                    className="rounded-md object-contain"
+                  />
+                  <h3 className="text-white font-extrabold text-xl tracking-tight">Paperless</h3>
+                </div>
                 <p>Fast, secure, and 100% client-side processing. Your files never leave your device.</p>
               </div>
               <div>
@@ -197,11 +232,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
             <div className="max-w-7xl mx-auto px-6 text-center mt-10 pt-6 border-t border-slate-800/50">
-              <p>© {new Date().getFullYear()} Utility Hub. All rights reserved.</p>
+              <p>© {new Date().getFullYear()} Paperless. All rights reserved.</p>
             </div>
           </footer>
         </FileProvider>
       </body>
     </html>
   );
-}
+}
