@@ -6,7 +6,7 @@ import { FileProvider } from './context/FileContext';
 
 import HeaderHistoryDrawer from './components/HeaderHistoryDrawer';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pdfcraft-utility.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://paperless-orcin.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
