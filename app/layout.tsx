@@ -1,17 +1,72 @@
+import type { Metadata } from 'next';
 import './globals.css';
 import Link from 'next/link';
 import { FileProvider } from './context/FileContext';
 
 import HeaderHistoryDrawer from './components/HeaderHistoryDrawer';
 
-export const metadata = {
-  title: 'Utility Hub',
-  description: 'Fast, secure, and free client-side tools for file management',
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pdfcraft-utility.vercel.app';
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'Student Utility Hub & PDF Tools',
+    template: '%s | Student Utility Hub & PDF Tools',
+  },
+  description: 'Free browser-based online tools to merge, compress, convert PDFs, resize images in cm/mm/px, generate QR codes, and calculate CGPA. 100% private with zero server uploads.',
+  keywords: [
+    'free pdf tools',
+    'client side utility hub',
+    'compress pdf online',
+    'image resizer cm mm',
+    'no upload document editor',
+    'student utility hub',
+  ],
+  authors: [{ name: 'Utility Hub Team' }],
+  creator: 'Utility Hub',
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: siteUrl,
+    title: 'Student Utility Hub & PDF Tools',
+    description: 'Free browser-based online tools to merge, compress, convert PDFs, resize images in cm/mm/px, generate QR codes, and calculate CGPA. 100% private with zero server uploads.',
+    siteName: 'Student Utility Hub',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Student Utility Hub & PDF Tools',
+    description: '100% Free, Private & Client-Side PDF and Image Processing Tools.',
+  },
+  alternates: {
+    canonical: './',
+  },
+};
+
+const jsonLdSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  'name': 'Student Utility Hub & PDF Tools',
+  'url': siteUrl,
+  'description': 'Free client-side online tools to merge, compress, convert PDFs, resize images in cm/mm/px, generate QR codes, and calculate CGPA with 100% data privacy.',
+  'applicationCategory': 'UtilitiesApplication',
+  'operatingSystem': 'All',
+  'browserRequirements': 'Requires JavaScript',
+  'offers': {
+    '@type': 'Offer',
+    'price': '0',
+    'priceCurrency': 'USD',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
+        />
+      </head>
       <body className="bg-white text-slate-900 min-h-screen flex flex-col font-sans selection:bg-blue-100">
         <FileProvider>
           {/* Animated Navbar without Pricing */}
