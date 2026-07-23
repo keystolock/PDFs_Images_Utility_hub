@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Privacy Policy | Utility Hub',
+  title: 'Privacy Policy | Paperless',
   description: 'Learn about how we protect your data with 100% client-side processing.',
 };
 
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-2xl font-bold text-black">1. 100% Client-Side Processing</h2>
           <p>
-            At UtilityHub, your privacy is our absolute priority. Unlike traditional file conversion websites, 
+            At Paperless, your privacy is our absolute priority. Unlike traditional file conversion websites, 
             <strong> we do not upload your files to our servers.</strong> All processing (compressing, converting, cropping) 
             happens locally directly within your web browser using client-side JavaScript.
           </p>

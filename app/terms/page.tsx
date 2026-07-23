@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Terms of Service | Utility Hub',
-  description: 'Terms of Service for using Utility Hub tools.',
+  title: 'Terms of Service | Paperless',
+  description: 'Terms of Service for using Paperless tools.',
 };
 
 export default function TermsPage() {
@@ -18,7 +18,7 @@ export default function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-2xl font-bold text-black">1. Acceptance of Terms</h2>
           <p>
-            By accessing and using UtilityHub, you accept and agree to be bound by the terms and provision of this agreement. 
+            By accessing and using Paperless, you accept and agree to be bound by the terms and provision of this agreement. 
             If you do not agree to abide by these terms, please do not use this service.
           </p>
         </section>
@@ -35,7 +35,7 @@ export default function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-2xl font-bold text-black">3. Limitation of Liability</h2>
           <p>
-            UtilityHub and its creators shall not be held liable for any direct, indirect, incidental, or consequential damages 
+            Paperless and its creators shall not be held liable for any direct, indirect, incidental, or consequential damages 
             resulting from the use or inability to use our services, including data loss or file corruption.
           </p>
         </section>

@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   },
   description: 'Compress PDFs, resize photos, convert formats, and manage documents instantly.',
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
   },
   keywords: [
     'paperless',
@@ -71,7 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/logo.png" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
@@ -83,17 +83,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex justify-between items-center">
               <Link href="/" className="hover:opacity-90 transition-opacity">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <Image
                     src="/logo.png"
                     alt="Paperless Logo"
-                    width={32}
-                    height={32}
+                    width={40}
+                    height={40}
                     style={{ width: 'auto', height: 'auto' }}
-                    className="rounded-md object-contain"
+                    className="rounded-lg object-contain"
                     priority
                   />
-                  <span className="font-extrabold text-xl tracking-tight text-black">Paperless</span>
+                  <span className="font-black text-2xl tracking-tight text-black">Paperless</span>
                 </div>
               </Link>
               

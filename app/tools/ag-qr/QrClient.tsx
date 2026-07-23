@@ -102,7 +102,7 @@ export default function QrClient() {
     // Footer
     ctx.fillStyle = '#64748b';
     ctx.font = '14px sans-serif';
-    ctx.fillText('Generated 100% Client-Side via Utility Hub', 40, 350);
+    ctx.fillText('Generated 100% Client-Side via Paperless', 40, 350);
 
     canvas.toBlob((blob) => {
       if (blob) {
