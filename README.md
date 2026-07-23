@@ -21,6 +21,8 @@ A high-performance, free,  web utility tool.* It is used to manipulate all your 
 * **Image & PDF OCR:** Extract text directly from images and multi-page PDF documents.
 * **Age Calculator & QR Code Generator:** Fast Age, Cgpa, QR Code Generator.
 
+### Improvements
+Any suggestion about new features, improvement, edit or modify in the existing codebase Project is Welcome.
 ---
 
 
