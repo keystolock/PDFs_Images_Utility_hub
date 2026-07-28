@@ -176,6 +176,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </button>
                   <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-slate-100 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
                     <div className="py-2">
+                      <Link href="/tools/pdf-editor" className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">PDF & Image Editor</Link>
+                      <Link href="/tools/barcode-generator" className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Barcode Generator</Link>
                       <Link href="/tools/pdf-merge" className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Merge PDF</Link>
                       <Link href="/tools/pdf-watermark" className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Watermark Remover</Link>
                       <Link href="/tools/bg-changer" className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Background Changer</Link>

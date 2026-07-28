@@ -102,6 +102,12 @@ export default function HomeClient() {
               <p className="text-slate-500 text-sm leading-relaxed">Convert pages to images instantly.</p>
             </Link>
 
+            <Link href="/tools/pdf-editor" className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 mb-4 inline-block">PDF & Image</span>
+              <h3 className="text-lg font-bold text-black mb-2 group-hover:text-blue-600 transition-colors">PDF & Image Editor</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">Erase text, stamps, or add signatures and stamps.</p>
+            </Link>
+
             <Link href="/tools/pdf-watermark" className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 mb-4 inline-block">PDF</span>
               <h3 className="text-lg font-bold text-black mb-2 group-hover:text-blue-600 transition-colors">PDF Watermark Remover</h3>
@@ -111,7 +117,7 @@ export default function HomeClient() {
             <Link href="/tools/pdf-image-crop" className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 mb-4 inline-block">PDF & Image</span>
               <h3 className="text-lg font-bold text-black mb-2 group-hover:text-blue-600 transition-colors">Crop Images & PDFs</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">Instantly crop and download Images and Pdfs</p>
+              <p className="text-slate-500 text-sm leading-relaxed">Instantly crop and download Images and PDFs.</p>
             </Link>
           </div>
         </div>
@@ -150,6 +156,12 @@ export default function HomeClient() {
             Text, Academic & Utilities
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Link href="/tools/barcode-generator" className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 mb-4 inline-block">Utility</span>
+              <h3 className="text-lg font-bold text-black mb-2 group-hover:text-blue-600 transition-colors">Barcode Generator</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">Generate Code128 barcodes with instant PNG export.</p>
+            </Link>
+
             <Link href="/tools/word-counter" className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 mb-4 inline-block">Text</span>
               <h3 className="text-lg font-bold text-black mb-2 group-hover:text-blue-600 transition-colors">Word Counter & OCR</h3>

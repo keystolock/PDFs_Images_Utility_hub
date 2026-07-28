@@ -1,98 +1,70 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useFileContext } from '../../context/FileContext';
-import { UniversalFilePreview } from '../../components/UniversalFilePreview';
+import { addHistoryItem } from '@/lib/historyStore';
 import Tesseract from 'tesseract.js';
 
 export default function MultiHubClient() {
-  const { files, activeFile, setFiles, addFiles, removeFile, activeIndex, setActiveIndex } = useFileContext();
-  const [activeTab, setActiveTab] = useState<'resizer' | 'compressor' | 'converter' | 'ocr' | 'watermark' | 'bg'>('resizer');
+  const { files, activeFile, addFiles, removeFile, activeIndex, setActiveIndex } = useFileContext();
+  
+  // Multi-Hub Active Tool Tab
+  const [activeTab, setActiveTab] = useState<'resizer' | 'compressor' | 'ocr' | 'watermark' | 'bg' | 'editor' | 'barcode'>('resizer');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Resizer State
-  const [width, setWidth] = useState('1920');
-  const [height, setHeight] = useState('1080');
-  const [lockRatio, setLockRatio] = useState(true);
-  const [imgFormat, setImgFormat] = useState('png');
+  // Resizer state
+  const [width, setWidth] = useState<string>('1080');
+  const [height, setHeight] = useState<string>('2400');
+  const [maintainRatio, setMaintainRatio] = useState<boolean>(true);
+  const [imgFormat, setImgFormat] = useState<'png' | 'jpg' | 'webp'>('png');
   const [origRatio, setOrigRatio] = useState<number | null>(null);
 
-  // Compressor State
-  const [targetKb, setTargetKb] = useState('200');
+  // Compressor state
+  const [targetKb, setTargetKb] = useState<string>('200');
 
-  // OCR State
+  // OCR state
   const [ocrText, setOcrText] = useState('');
   const [ocrLoading, setOcrLoading] = useState(false);
-  const [ocrProgress, setOcrProgress] = useState(0);
 
-  // General Status & Download
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progressMsg, setProgressMsg] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Set initial dimensions when activeFile changes
+  // Pre-load active file dimensions & preview URL
   useEffect(() => {
-    if (!activeFile) return;
+    if (!activeFile) {
+      setPreviewUrl(null);
+      return;
+    }
     if (activeFile.type.startsWith('image/')) {
       const url = URL.createObjectURL(activeFile);
+      setPreviewUrl(url);
       const img = new Image();
       img.onload = () => {
         setWidth(img.width.toString());
         setHeight(img.height.toString());
         setOrigRatio(img.width / img.height);
-        URL.revokeObjectURL(url);
       };
       img.src = url;
+    } else {
+      setPreviewUrl(null);
     }
   }, [activeFile]);
 
-  // Width change handler with lock ratio
   const handleWidthChange = (val: string) => {
     setWidth(val);
-    if (lockRatio && origRatio && !isNaN(parseFloat(val))) {
+    if (maintainRatio && origRatio && !isNaN(parseFloat(val))) {
       setHeight(Math.round(parseFloat(val) / origRatio).toString());
     }
   };
 
-  // Quick Preset Handlers
-  const applyPreset = (type: 'passport' | 'signature' | 'pancard' | 'ssc_photo' | 'ssc_sig' | 'upsc_photo' | 'bank_sig' | 'compress200') => {
-    setActiveTab('resizer');
-    setUnit('px');
-    if (type === 'passport') {
-      // 3.5cm x 4.5cm at 300 DPI = 413 x 531 px
-      setWidth('413');
-      setHeight('531');
-      setImgFormat('jpg');
-    } else if (type === 'signature') {
-      setWidth('256');
-      setHeight('64');
-      setImgFormat('png');
-    } else if (type === 'pancard') {
-      setWidth('217');
-      setHeight('295');
-      setImgFormat('jpg');
-    } else if (type === 'ssc_photo') {
-      setWidth('413');
-      setHeight('531');
-      setImgFormat('jpg');
-    } else if (type === 'ssc_sig') {
-      setWidth('472');
-      setHeight('236');
-      setImgFormat('jpg');
-    } else if (type === 'upsc_photo') {
-      setWidth('350');
-      setHeight('350');
-      setImgFormat('jpg');
-    } else if (type === 'bank_sig') {
-      setWidth('140');
-      setHeight('60');
-      setImgFormat('jpg');
-    } else if (type === 'compress200') {
-      setActiveTab('compressor');
-      setTargetKb('200');
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      addFiles(Array.from(e.target.files));
     }
   };
 
-  // Instant Download Helper
-  const downloadBlob = (blob: Blob, filename: string) => {
+  const triggerDownload = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -100,48 +72,26 @@ export default function MultiHubClient() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    addHistoryItem({
+      filename,
+      toolName: 'Multi-Tools Hub',
+      downloadUrl: url,
+      fileSizeText: `${(blob.size / 1024).toFixed(1)} KB`,
+    });
   };
 
-  // Unit & DPI State
-  const [unit, setUnit] = useState<'px' | 'cm' | 'mm' | 'in'>('px');
-  const [dpi, setDpi] = useState<number>(300);
-
-  // Resize Mode State: 'dimensions' | 'percentage'
-  const [resizeMode, setResizeMode] = useState<'dimensions' | 'percentage'>('dimensions');
-  const [percentScale, setPercentScale] = useState<string>('50');
-
-  const getPixelVal = (valStr: string, u: 'px' | 'cm' | 'mm' | 'in', currentDpi: number) => {
-    const val = parseFloat(valStr) || 0;
-    if (u === 'in') return Math.round(val * currentDpi);
-    if (u === 'cm') return Math.round((val / 2.54) * currentDpi);
-    if (u === 'mm') return Math.round((val / 25.4) * currentDpi);
-    return Math.round(val);
-  };
-
-  // Perform Image Resizing, Physical Unit Calculation & Format Conversion
-  const handleResizeAndDownload = async () => {
-    if (!activeFile) return;
+  const handleResize = async () => {
+    if (!activeFile || !previewUrl) return;
     setIsProcessing(true);
-    setProgressMsg('Rendering resized image on canvas...');
 
     try {
-      const url = URL.createObjectURL(activeFile);
       const img = new Image();
-      img.src = url;
+      img.src = previewUrl;
       await new Promise((res) => (img.onload = res));
 
-      let targetW = img.width;
-      let targetH = img.height;
-
-      if (resizeMode === 'percentage') {
-        const pct = (parseFloat(percentScale) || 100) / 100;
-        targetW = Math.max(1, Math.round(img.width * pct));
-        targetH = Math.max(1, Math.round(img.height * pct));
-      } else {
-        targetW = getPixelVal(width, unit, dpi) || img.width;
-        targetH = getPixelVal(height, unit, dpi) || img.height;
-      }
+      const targetW = parseInt(width) || img.width;
+      const targetH = parseInt(height) || img.height;
 
       const canvas = document.createElement('canvas');
       canvas.width = targetW;
@@ -153,14 +103,12 @@ export default function MultiHubClient() {
         ctx.drawImage(img, 0, 0, targetW, targetH);
       }
 
-      const mimeType = `image/${imgFormat}`;
       canvas.toBlob((blob) => {
         if (blob) {
-          downloadBlob(blob, `resized_${activeFile.name.split('.')[0]}.${imgFormat}`);
+          triggerDownload(blob, `resized_${activeFile.name.split('.')[0]}.${imgFormat}`);
         }
-        URL.revokeObjectURL(url);
         setIsProcessing(false);
-      }, mimeType, 0.92);
+      }, `image/${imgFormat}`, 0.92);
     } catch (err) {
       console.error(err);
       alert('Error resizing image.');
@@ -168,17 +116,14 @@ export default function MultiHubClient() {
     }
   };
 
-  // Binary Search Target KB Compression via Canvas Quality & Scaling Loop
-  const handleCompressAndDownload = async () => {
-    if (!activeFile) return;
+  const handleCompress = async () => {
+    if (!activeFile || !previewUrl) return;
     setIsProcessing(true);
-    setProgressMsg(`Compressing file strictly under ${targetKb} KB...`);
 
     try {
       const targetBytes = (parseFloat(targetKb) || 200) * 1024;
-      const url = URL.createObjectURL(activeFile);
       const img = new Image();
-      img.src = url;
+      img.src = previewUrl;
       await new Promise((res) => (img.onload = res));
 
       let curW = img.width;
@@ -225,23 +170,19 @@ export default function MultiHubClient() {
       }
 
       if (bestBlob) {
-        downloadBlob(bestBlob, `compressed_${activeFile.name.split('.')[0]}.jpg`);
+        triggerDownload(bestBlob, `compressed_${activeFile.name.split('.')[0]}.jpg`);
       }
-      URL.revokeObjectURL(url);
       setIsProcessing(false);
     } catch (err) {
       console.error(err);
-      alert('Error compressing image.');
+      alert('Error compressing file.');
       setIsProcessing(false);
     }
   };
 
-  // Perform Tesseract.js Client-Side OCR
   const handleRunOcr = async () => {
     if (!activeFile) return;
     setOcrLoading(true);
-    setOcrProgress(0);
-
     try {
       const worker = await Tesseract.createWorker('eng');
       const ret = await worker.recognize(activeFile);
@@ -249,108 +190,59 @@ export default function MultiHubClient() {
       await worker.terminate();
     } catch (err) {
       console.error(err);
-      alert('OCR extraction failed.');
+      alert('OCR failed.');
     } finally {
       setOcrLoading(false);
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-6">
-        <div>
-          <Link href="/" className="text-blue-600 font-semibold hover:underline text-xs mb-2 inline-block">
-            ← Back to Home
-          </Link>
-          <h1 className="text-3xl sm:text-4xl font-black text-black tracking-tight">
-            ⚡ Multi-Tools Hub Dashboard
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            All utilities in one place. Your files are pre-loaded in memory for instant manipulation.
-          </p>
-        </div>
-
-        {/* One-Click Quick Presets (Official Exam & Govt Forms) */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => applyPreset('passport')}
-            className="bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-extrabold px-3 py-2 rounded-xl border border-blue-200 transition-all cursor-pointer shadow-xs"
-          >
-            📸 Passport Photo (3.5x4.5cm)
-          </button>
-          <button
-            onClick={() => applyPreset('ssc_photo')}
-            className="bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-extrabold px-3 py-2 rounded-xl border border-sky-200 transition-all cursor-pointer shadow-xs"
-          >
-            📜 SSC Photo (20-50KB)
-          </button>
-          <button
-            onClick={() => applyPreset('upsc_photo')}
-            className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-extrabold px-3 py-2 rounded-xl border border-indigo-200 transition-all cursor-pointer shadow-xs"
-          >
-            🏛️ UPSC Photo (350x350px)
-          </button>
-          <button
-            onClick={() => applyPreset('bank_sig')}
-            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-extrabold px-3 py-2 rounded-xl border border-emerald-200 transition-all cursor-pointer shadow-xs"
-          >
-            🏦 Bank Sig (140x60px)
-          </button>
-          <button
-            onClick={() => applyPreset('signature')}
-            className="bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-extrabold px-3 py-2 rounded-xl border border-purple-200 transition-all cursor-pointer shadow-xs"
-          >
-            ✍️ Signature (256x64px)
-          </button>
-          <button
-            onClick={() => applyPreset('compress200')}
-            className="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-extrabold px-3 py-2 rounded-xl border border-amber-200 transition-all cursor-pointer shadow-xs"
-          >
-            🗜️ Compress &lt; 200KB
-          </button>
-        </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      {/* Title Header with ← Back to Home Link */}
+      <div>
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs inline-block mb-1">
+          ← Back to Home
+        </Link>
+        <h1 className="text-2xl sm:text-3xl font-black text-black">⚡ Multi-Tools Hub</h1>
+        <p className="text-slate-500 text-xs mt-0.5">Pre-loaded file workspace. All Paperless tools in one clean hub.</p>
       </div>
 
-      {/* Main Side-by-Side Split View (Pi7 Style) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column (5 cols): Permanent Anchored Preview & Queue */}
-        <div className="lg:col-span-5 space-y-6 sticky top-24">
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-            <h2 className="font-extrabold text-black text-base flex items-center justify-between">
-              <span>Selected File Preview</span>
-              <span className="text-xs font-normal text-slate-400">Zero re-upload required</span>
-            </h2>
+      <input ref={fileInputRef} type="file" multiple onChange={handleFileSelect} className="hidden" />
 
-            <UniversalFilePreview
-              files={files}
-              activeFileIndex={activeIndex}
-              onFilesSelected={(newFiles) => addFiles(newFiles)}
-              onRemoveFile={(idx) => removeFile(idx)}
-              onSelectActiveIndex={(idx) => setActiveIndex(idx)}
-              label="Add or drop more files here"
-            />
+      {/* INITIAL FILE DROP BOX (WHEN NO FILES LOADED) */}
+      {files.length === 0 && (
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className="bg-white p-10 rounded-3xl border-2 border-dashed border-blue-400 text-center shadow-sm cursor-pointer hover:bg-slate-50 transition-all space-y-3 max-w-lg mx-auto"
+        >
+          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-xs">
+            ⚡
           </div>
+          <p className="font-extrabold text-base text-black">Click or Drag & Drop Files Here to Start</p>
+          <p className="text-xs text-slate-400 font-medium">Supports PDF, PNG, JPG, WEBP, DOCX</p>
         </div>
+      )}
 
-        {/* Right Column (7 cols): Interactive Tool Settings Dashboard */}
-        <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-          {/* Tool Selector Tabs */}
-          <div className="flex flex-wrap gap-2 border-b border-slate-100 pb-4">
+      {/* WORKSPACE WHEN FILES PRE-LOADED IN CONTEXT */}
+      {files.length > 0 && activeFile && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          
+          {/* IMAGE 2 CLEAN SINGLE-ROW HORIZONTAL SCROLLING RIBBON */}
+          <div className="bg-slate-100/80 p-1.5 rounded-full border border-slate-200/80 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap max-w-2xl mx-auto">
             {[
               { id: 'resizer', label: '📏 Resize & Format' },
-              { id: 'compressor', label: '🗜️ Compress Size' },
-              { id: 'ocr', label: '🔍 OCR Text Extract' },
-              { id: 'watermark', label: '🧹 Clean Watermark' },
+              { id: 'compressor', label: '🗜️ Target KB Compress' },
+              { id: 'ocr', label: '🔍 OCR Scan' },
               { id: 'bg', label: '🎨 BG Swap' },
+              { id: 'editor', label: '📝 PDF Editor' },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:bg-white/60'
                 }`}
               >
                 {tab.label}
@@ -358,281 +250,171 @@ export default function MultiHubClient() {
             ))}
           </div>
 
-          {!activeFile ? (
-            <div className="text-center py-16 text-slate-400 space-y-3">
-              <span className="text-4xl">📥</span>
-              <p className="font-bold text-slate-600 text-sm">No file selected in memory.</p>
-              <p className="text-xs">Use the dropzone on the left to load a file instantly.</p>
+          {/* ACTIVE FILE PREVIEW CANVAS (RESTORED PREVIEW) */}
+          {previewUrl && (
+            <div className="flex justify-center">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl shadow-xs inline-block">
+                <img src={previewUrl} alt="Active preview" className="max-h-48 w-auto block object-contain rounded-xl" />
+              </div>
             </div>
-          ) : (
-            <div className="space-y-6">
-              {/* TAB 1: RESIZER & FORMAT CONVERTER */}
-              {activeTab === 'resizer' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-extrabold text-black text-lg">Image Resizer & Format Converter</h3>
-                    <p className="text-slate-500 text-xs mt-1">
-                      Target specific width/height dimensions (px, cm, mm, in), scale by percentage, or convert file formats.
-                    </p>
-                  </div>
+          )}
 
-                  {/* Mode selector: Dimensions vs Percentage */}
-                  <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
-                    <button
-                      onClick={() => setResizeMode('dimensions')}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        resizeMode === 'dimensions' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600'
-                      }`}
-                    >
-                      Dimensions (Custom Unit)
-                    </button>
-                    <button
-                      onClick={() => setResizeMode('percentage')}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        resizeMode === 'percentage' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600'
-                      }`}
-                    >
-                      Scale by Percentage (%)
-                    </button>
-                  </div>
+          {/* TAB 1: RESIZER & FORMAT CONVERTER */}
+          {activeTab === 'resizer' && (
+            <div className="space-y-4 max-w-md mx-auto text-center">
+              <label className="text-xs font-bold text-slate-700 cursor-pointer flex items-center justify-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={maintainRatio}
+                  onChange={(e) => setMaintainRatio(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded cursor-pointer"
+                />
+                <span>Maintain Aspect Ratio</span>
+              </label>
 
-                  {resizeMode === 'dimensions' ? (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-[10px] text-slate-500 font-bold block mb-1">UNIT</label>
-                          <select
-                            value={unit}
-                            onChange={(e) => setUnit(e.target.value as any)}
-                            className="bg-slate-50 border border-slate-200 text-black text-xs font-bold rounded-xl px-3 py-2 w-full focus:outline-none focus:border-blue-600 cursor-pointer"
-                          >
-                            <option value="px">Pixels (px)</option>
-                            <option value="cm">Centimeters (cm)</option>
-                            <option value="mm">Millimeters (mm)</option>
-                            <option value="in">Inches (in)</option>
-                          </select>
-                        </div>
-                        {unit !== 'px' && (
-                          <div>
-                            <label className="text-[10px] text-slate-500 font-bold block mb-1">DPI (PRINT)</label>
-                            <select
-                              value={dpi}
-                              onChange={(e) => setDpi(Number(e.target.value))}
-                              className="bg-slate-50 border border-slate-200 text-black text-xs font-bold rounded-xl px-3 py-2 w-full focus:outline-none focus:border-blue-600 cursor-pointer"
-                            >
-                              <option value={72}>72 DPI (Screen)</option>
-                              <option value={96}>96 DPI (Web Standard)</option>
-                              <option value={150}>150 DPI (Draft Print)</option>
-                              <option value={300}>300 DPI (High Quality / Passport)</option>
-                              <option value={600}>600 DPI (Ultra Print)</option>
-                            </select>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-black uppercase mb-1">
-                            Width ({unit.toUpperCase()})
-                          </label>
-                          <input
-                            type="number"
-                            step={unit === 'px' ? '1' : '0.1'}
-                            value={width}
-                            onChange={(e) => handleWidthChange(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-black text-sm font-bold focus:outline-none focus:border-blue-600"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-black uppercase mb-1">
-                            Height ({unit.toUpperCase()})
-                          </label>
-                          <input
-                            type="number"
-                            step={unit === 'px' ? '1' : '0.1'}
-                            value={height}
-                            onChange={(e) => setHeight(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-black text-sm font-bold focus:outline-none focus:border-blue-600"
-                          />
-                        </div>
-                      </div>
-
-                      {unit !== 'px' && (
-                        <p className="text-[10px] text-blue-600 font-semibold">
-                          Calculated resolution: {getPixelVal(width, unit, dpi)}×{getPixelVal(height, unit, dpi)} px @ {dpi} DPI
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                      <label className="block text-xs font-bold text-black uppercase">Percentage Scale Ratio (%)</label>
-                      <div className="flex gap-3 items-center">
-                        <input
-                          type="number"
-                          value={percentScale}
-                          onChange={(e) => setPercentScale(e.target.value)}
-                          className="bg-white border border-slate-200 text-black font-black text-lg rounded-xl p-3 w-32 focus:outline-none focus:border-blue-600"
-                        />
-                        <div className="flex flex-wrap gap-1.5">
-                          {['25', '50', '75', '125', '150', '200'].map((pct) => (
-                            <button
-                              key={pct}
-                              onClick={() => setPercentScale(pct)}
-                              className="px-3 py-1.5 bg-white border border-slate-200 text-xs font-bold text-slate-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 cursor-pointer"
-                            >
-                              {pct}%
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <label className="flex items-center gap-2 text-xs font-bold text-black cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={lockRatio}
-                        onChange={(e) => setLockRatio(e.target.checked)}
-                        className="rounded text-blue-600 cursor-pointer"
-                      />
-                      Lock Aspect Ratio
-                    </label>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-500">Target Format:</span>
-                      <select
-                        value={imgFormat}
-                        onChange={(e) => setImgFormat(e.target.value)}
-                        className="bg-white border border-slate-200 text-black text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none cursor-pointer"
-                      >
-                        <option value="png">PNG</option>
-                        <option value="jpg">JPG</option>
-                        <option value="webp">WEBP</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleResizeAndDownload}
-                    disabled={isProcessing}
-                    className="w-full bg-slate-900 hover:bg-black text-white text-xs font-bold py-4 rounded-2xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {isProcessing ? '⚡ Processing Canvas...' : '↓ Resize & Instant Download'}
-                  </button>
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 text-left">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Width (PX)</label>
+                  <input
+                    type="number"
+                    value={width}
+                    onChange={(e) => handleWidthChange(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-center text-sm font-black text-black focus:outline-none"
+                  />
                 </div>
-              )}
 
-              {/* TAB 2: COMPRESSOR */}
-              {activeTab === 'compressor' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-extrabold text-black text-lg">Target KB File Size Compressor</h3>
-                    <p className="text-slate-500 text-xs mt-1">
-                      Compress file weight under target KB (e.g. 100KB, 200KB for official forms).
-                    </p>
-                  </div>
+                <span className="text-slate-400 font-bold text-lg pt-4">X</span>
 
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-black uppercase">Target Size (KB)</label>
-                    <input
-                      type="number"
-                      value={targetKb}
-                      onChange={(e) => setTargetKb(e.target.value)}
-                      placeholder="e.g. 200"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-black text-lg font-black focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleCompressAndDownload}
-                    disabled={isProcessing}
-                    className="w-full bg-slate-900 hover:bg-black text-white text-xs font-bold py-4 rounded-2xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {isProcessing ? '⚡ Compressing...' : `↓ Compress under ${targetKb} KB & Download`}
-                  </button>
+                <div className="flex-1 text-left">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Height (PX)</label>
+                  <input
+                    type="number"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-center text-sm font-black text-black focus:outline-none"
+                  />
                 </div>
-              )}
+              </div>
 
-              {/* TAB 3: OCR EXTRACTOR */}
-              {activeTab === 'ocr' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-extrabold text-black text-lg">Image-to-Text OCR Scanner</h3>
-                    <p className="text-slate-500 text-xs mt-1">
-                      Extract text content client-side using Tesseract.js.
-                    </p>
-                  </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs font-bold text-slate-500">Output Format:</span>
+                <select
+                  value={imgFormat}
+                  onChange={(e) => setImgFormat(e.target.value as any)}
+                  className="bg-slate-50 border border-slate-200 text-black text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none cursor-pointer"
+                >
+                  <option value="png">PNG</option>
+                  <option value="jpg">JPG</option>
+                  <option value="webp">WEBP</option>
+                </select>
+              </div>
 
-                  <button
-                    onClick={handleRunOcr}
-                    disabled={ocrLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3.5 rounded-2xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {ocrLoading ? '🔍 Scanning Image (Tesseract.js)...' : '📷 Run OCR Text Scan'}
-                  </button>
+              <button
+                onClick={handleResize}
+                disabled={isProcessing}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm py-3 px-8 rounded-xl transition-all shadow-md w-full cursor-pointer"
+              >
+                {isProcessing ? 'Processing Canvas...' : 'Resize & Download Image'}
+              </button>
+            </div>
+          )}
 
-                  {ocrText && (
-                    <div className="space-y-2 pt-2">
-                      <div className="flex justify-between items-center">
-                        <label className="text-xs font-bold text-black uppercase">Extracted Text:</label>
-                        <button
-                          onClick={() => navigator.clipboard.writeText(ocrText)}
-                          className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
-                        >
-                          📋 Copy to Clipboard
-                        </button>
-                      </div>
-                      <textarea
-                        rows={8}
-                        readOnly
-                        value={ocrText}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-black text-xs font-mono focus:outline-none"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
+          {/* TAB 2: COMPRESSOR */}
+          {activeTab === 'compressor' && (
+            <div className="space-y-4 max-w-sm mx-auto text-center">
+              <div>
+                <label className="block text-xs font-bold text-black uppercase mb-1">Target KB File Weight</label>
+                <input
+                  type="number"
+                  value={targetKb}
+                  onChange={(e) => setTargetKb(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-center text-lg font-black text-black focus:outline-none"
+                />
+              </div>
 
-              {/* TAB 4: WATERMARK REMOVER */}
-              {activeTab === 'watermark' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-extrabold text-black text-lg">Watermark Cleaning Tool</h3>
-                    <p className="text-slate-500 text-xs mt-1">
-                      Access specialized watermark removing tool with adaptive selection overlay.
-                    </p>
-                  </div>
-                  <Link
-                    href="/tools/pdf-watermark"
-                    className="inline-block bg-slate-900 hover:bg-black text-white text-xs font-bold px-6 py-3.5 rounded-2xl transition-all shadow-md"
-                  >
-                    Open Watermark Removal Suite ➔
-                  </Link>
-                </div>
-              )}
+              <button
+                onClick={handleCompress}
+                disabled={isProcessing}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm py-3 px-8 rounded-xl transition-all shadow-md w-full cursor-pointer"
+              >
+                {isProcessing ? 'Compressing File...' : `Compress under ${targetKb} KB & Download`}
+              </button>
+            </div>
+          )}
 
-              {/* TAB 5: BG CHANGER */}
-              {activeTab === 'bg' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-extrabold text-black text-lg">Background Removal & Solid Color Swap</h3>
-                    <p className="text-slate-500 text-xs mt-1">
-                      Isolate foreground subject and swap backgrounds globally.
-                    </p>
-                  </div>
-                  <Link
-                    href="/tools/bg-changer"
-                    className="inline-block bg-slate-900 hover:bg-black text-white text-xs font-bold px-6 py-3.5 rounded-2xl transition-all shadow-md"
-                  >
-                    Open Photo Background Editor ➔
-                  </Link>
-                </div>
+          {/* TAB 3: OCR */}
+          {activeTab === 'ocr' && (
+            <div className="space-y-4 max-w-md mx-auto text-center">
+              <button
+                onClick={handleRunOcr}
+                disabled={ocrLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 px-6 rounded-xl transition-all shadow-sm cursor-pointer"
+              >
+                {ocrLoading ? 'Scanning Text...' : '📷 Run OCR Text Scan'}
+              </button>
+
+              {ocrText && (
+                <textarea
+                  rows={5}
+                  readOnly
+                  value={ocrText}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-black text-xs font-mono"
+                />
               )}
             </div>
           )}
+
+           {/* TAB 5: BG CHANGER */}
+          {activeTab === 'bg' && (
+            <div className="text-center py-3 space-y-3">
+              <p className="text-xs font-bold text-slate-600">Open photo background replacement suite:</p>
+              <Link href="/tools/bg-changer" className="inline-block bg-slate-900 text-white text-xs font-bold px-6 py-2.5 rounded-xl hover:bg-black transition-all">
+                Open Photo Background Editor ➔
+              </Link>
+            </div>
+          )}
+
+          {/* TAB 6: EDITOR */}
+          {activeTab === 'editor' && (
+            <div className="text-center py-3 space-y-3">
+              <p className="text-xs font-bold text-slate-600">Open PDF document text eraser & signature stamp suite:</p>
+              <Link href="/tools/pdf-editor" className="inline-block bg-slate-900 text-white text-xs font-bold px-6 py-2.5 rounded-xl hover:bg-black transition-all">
+                Open PDF Editor ➔
+              </Link>
+            </div>
+          )}
+
+          {/* BOTTOM TRAY WITH + BUTTON AND ACTIVE FILE PILLS */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-slate-100">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-12 h-12 bg-slate-100 hover:bg-slate-200 text-black font-black text-2xl rounded-2xl flex items-center justify-center transition-all shadow-xs cursor-pointer"
+              title="Write new / Choose from files"
+            >
+              +
+            </button>
+
+            {files.map((f, idx) => (
+              <div
+                key={idx}
+                onClick={() => setActiveIndex(idx)}
+                className={`flex items-center gap-2 p-1.5 pr-3 rounded-2xl border transition-all cursor-pointer shadow-xs ${
+                  activeIndex === idx ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-200' : 'bg-slate-100 border-slate-200'
+                }`}
+              >
+                <span className="text-xs font-bold text-black max-w-[130px] truncate">{f.name}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
+                  className="text-slate-400 hover:text-red-600 text-xs font-bold p-0.5 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
         </div>
-      </div>
+      )}
     </div>
   );
 }
