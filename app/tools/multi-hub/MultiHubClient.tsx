@@ -200,7 +200,7 @@ export default function MultiHubClient() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       {/* Title Header with ← Back to Home Link */}
       <div>
-        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs inline-block mb-1">
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
           ← Back to Home
         </Link>
         <h1 className="text-2xl sm:text-3xl font-black text-black">⚡ Multi-Tools Hub</h1>
@@ -227,8 +227,8 @@ export default function MultiHubClient() {
       {files.length > 0 && activeFile && (
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
           
-          {/* IMAGE 2 CLEAN SINGLE-ROW HORIZONTAL SCROLLING RIBBON */}
-          <div className="bg-slate-100/80 p-1.5 rounded-full border border-slate-200/80 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap max-w-2xl mx-auto">
+          {/* 2-ROW WRAPPING FLEX RIBBON ON MOBILE */}
+          <div className="bg-slate-100/80 p-1.5 rounded-[20px] sm:rounded-full border border-slate-200/80 flex flex-wrap sm:flex-nowrap items-center justify-center gap-1.5 max-w-2xl mx-auto">
             {[
               { id: 'resizer', label: '📏 Resize & Format' },
               { id: 'compressor', label: '🗜️ Target KB Compress' },

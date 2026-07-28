@@ -124,10 +124,6 @@ export default function PdfEditorClient() {
       pdfDocRef.current = pdfDoc;
       setTotalPages(pdfDoc.numPages);
 
-      if (pdfDoc.numPages > 1) {
-        setShowThumbnails(true);
-      }
-
       const page = await pdfDoc.getPage(pageNum);
       const viewport = page.getViewport({ scale: 1.5 });
       const canvas = document.createElement('canvas');
@@ -488,15 +484,13 @@ export default function PdfEditorClient() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Title Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-4">
-        <div>
-          <Link href="/" className="text-blue-600 font-bold hover:underline text-xs inline-block mb-1">
-            ← Back to Home
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-black">PDF Document Editor</h1>
-          <p className="text-slate-500 text-xs mt-0.5">Interactive text resizer, font picker, eraser & digital signature pad.</p>
-        </div>
+      {/* Title Header with Mobile Left Corner Alignment */}
+      <div>
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
+          ← Back to Home
+        </Link>
+        <h1 className="text-2xl sm:text-3xl font-black text-black">PDF Document Editor</h1>
+        <p className="text-slate-500 text-xs mt-0.5">Interactive text resizer, font picker, eraser & digital signature pad.</p>
       </div>
 
       <input ref={fileInputRef} type="file" accept="application/pdf,image/*" onChange={handleFileChange} className="hidden" />
@@ -516,13 +510,13 @@ export default function PdfEditorClient() {
         </div>
       )}
 
-      {/* IMAGE 3 STYLE RIBBON & DOCUMENT WORKSPACE */}
+      {/* WOBBLE-FREE SYMMETRICAL 2-ROW RIBBON */}
       {file && previewUrl && (
         <div className="space-y-6">
           
-          {/* IMAGE 3 TOP RIBBON TOOLBAR */}
-          <div className="bg-white px-6 py-2.5 rounded-full border border-slate-200 shadow-md flex items-center justify-between gap-4 max-w-4xl mx-auto overflow-x-auto">
-            <div className="flex items-center gap-2 py-1">
+          <div className="bg-white p-4 rounded-[24px] sm:rounded-full border border-slate-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
+            {/* ROW 1: Page Navigation and Primary Tool Selectors */}
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
               <button
                 onClick={() => setShowThumbnails(!showThumbnails)}
                 className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
@@ -533,21 +527,22 @@ export default function PdfEditorClient() {
               </button>
 
               {fileType === 'pdf' && totalPages > 1 && (
-                <div className="flex items-center gap-1.5 ml-1">
+                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full shadow-inner">
                   <button
                     onClick={handlePrevPage}
                     disabled={currentPage === 1 || isProcessing}
-                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700 disabled:opacity-50"
+                    className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     ←
                   </button>
-                  <span className="text-xs font-bold text-black px-1">
-                    {currentPage} / {totalPages}
+                  {/* Fixed-width Monospace to completely stop ribbon wobbling/shaking */}
+                  <span className="text-xs font-mono font-bold text-black w-14 text-center inline-block tabular-nums select-none">
+                    {currentPage}/{totalPages}
                   </span>
                   <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages || isProcessing}
-                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700 disabled:opacity-50"
+                    className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     →
                   </button>
@@ -580,7 +575,13 @@ export default function PdfEditorClient() {
               >
                 🖍️ Highlight
               </button>
+            </div>
 
+            {/* Vertical separator visible only on desktop */}
+            <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+
+            {/* ROW 2: Overlay Editors, done bake, and Download actions */}
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
               <button
                 onClick={() => setActiveTool('addText')}
                 className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
@@ -602,20 +603,18 @@ export default function PdfEditorClient() {
               <button
                 onClick={handleApplyEdits}
                 disabled={isProcessing}
-                className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-5 py-2 rounded-full transition-all shadow-xs cursor-pointer ml-1"
+                className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-5 py-2 rounded-full transition-all shadow-xs cursor-pointer"
               >
-                {isProcessing ? 'Baking...' : '✓ Done'}
+                {isProcessing ? '...' : '✓ Done'}
+              </button>
+
+              <button
+                onClick={handleDownload}
+                className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all shadow-md cursor-pointer whitespace-nowrap"
+              >
+                Download ∨
               </button>
             </div>
-
-            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
-
-            <button
-              onClick={handleDownload}
-              className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all shadow-md cursor-pointer whitespace-nowrap"
-            >
-              Download ∨
-            </button>
           </div>
 
           {/* ACTIVE TOOL CONTROLS */}
@@ -757,11 +756,11 @@ export default function PdfEditorClient() {
               </div>
             )}
 
-            {/* DOCUMENT CANVAS WITH RESIZABLE OVERLAYS */}
+            {/* DOCUMENT CANVAS VIEW */}
             <div className={`${showThumbnails && fileType === 'pdf' && totalPages > 1 ? 'md:col-span-9' : 'md:col-span-12'} flex justify-center`}>
               <div
                 ref={containerRef}
-                className="relative inline-block overflow-hidden rounded-3xl border border-slate-300 bg-slate-100 max-w-full shadow-xl select-none touch-none min-h-[300px]"
+                className="relative inline-block overflow-hidden rounded-3xl border border-slate-300 bg-slate-100 max-w-full shadow-xl select-none min-h-[300px]"
               >
                 <img
                   src={previewUrl}
@@ -788,7 +787,7 @@ export default function PdfEditorClient() {
                     <div
                       onMouseDown={(e) => { e.stopPropagation(); startDrag(e.clientX, e.clientY, 'se'); }}
                       onTouchStart={(e) => { e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY, 'se'); }}
-                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-red-600 rounded-full cursor-se-resize shadow-md"
+                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-red-600 rounded-full cursor-se-resize shadow-md touch-none"
                     />
                   </div>
                 )}
@@ -813,11 +812,10 @@ export default function PdfEditorClient() {
                       {textString}
                     </div>
 
-                    {/* RESIZE HANDLE FOR EXPAND / SHRINK ON DESKTOP & MOBILE TOUCH */}
                     <div
                       onMouseDown={(e) => { e.stopPropagation(); startDrag(e.clientX, e.clientY, 'se'); }}
                       onTouchStart={(e) => { e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY, 'se'); }}
-                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-blue-600 rounded-full cursor-se-resize shadow-md flex items-center justify-center text-[9px] font-black text-blue-600"
+                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-blue-600 rounded-full cursor-se-resize shadow-md flex items-center justify-center text-[9px] font-black text-blue-600 touch-none"
                       title="Drag to resize text box"
                     >
                       ↘
@@ -844,7 +842,7 @@ export default function PdfEditorClient() {
                     <div
                       onMouseDown={(e) => { e.stopPropagation(); startDrag(e.clientX, e.clientY, 'se'); }}
                       onTouchStart={(e) => { e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY, 'se'); }}
-                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-amber-600 rounded-full cursor-se-resize shadow-md"
+                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-amber-600 rounded-full cursor-se-resize shadow-md touch-none"
                     />
                   </div>
                 )}
@@ -866,7 +864,7 @@ export default function PdfEditorClient() {
                     <div
                       onMouseDown={(e) => { e.stopPropagation(); startDrag(e.clientX, e.clientY, 'se'); }}
                       onTouchStart={(e) => { e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY, 'se'); }}
-                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-blue-600 rounded-full cursor-se-resize shadow-md"
+                      className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-blue-600 rounded-full cursor-se-resize shadow-md touch-none"
                     />
                   </div>
                 )}

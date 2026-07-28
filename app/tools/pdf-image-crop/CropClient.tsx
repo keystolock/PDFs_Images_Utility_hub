@@ -199,7 +199,6 @@ export default function CropClient() {
     };
   }, [dragType]);
 
-  // Bake & Download cropped image instantly on download click
   const handleInstantCropAndDownload = async () => {
     if (!previewUrl || !file) return;
     setIsProcessing(true);
@@ -257,9 +256,9 @@ export default function CropClient() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Title Header */}
+      {/* Title Header with Mobile Left Corner Alignment */}
       <div>
-        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs inline-block mb-1">
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
           ← Back to Home
         </Link>
         <h1 className="text-2xl sm:text-3xl font-black text-black">Crop PDF & Images Online</h1>
@@ -292,27 +291,29 @@ export default function CropClient() {
       {file && previewUrl && (
         <div className="space-y-6">
           
-          {/* IMAGE 3 TOP RIBBON TOOLBAR (PREVIEW CROP BUTTON REMOVED) */}
-          <div className="bg-white px-6 py-2.5 rounded-full border border-slate-200 shadow-md flex items-center justify-between gap-4 max-w-4xl mx-auto overflow-x-auto">
-            <div className="flex items-center gap-2 py-1">
+          {/* WOBBLE-FREE SYMMETRICAL 2-ROW RIBBON */}
+          <div className="bg-white p-4 rounded-[24px] sm:rounded-full border border-slate-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
+            {/* ROW 1: Page selectors & settings */}
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
               <span className="text-xs font-bold text-slate-700">Crop Ratio: Freeform Box</span>
 
               {fileType === 'pdf' && totalPages > 1 && (
-                <div className="flex items-center gap-1.5 ml-1">
+                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full shadow-inner">
                   <button
                     onClick={handlePrevPage}
                     disabled={currentPage === 1}
-                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700 disabled:opacity-50"
+                    className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     ←
                   </button>
-                  <span className="text-xs font-bold text-black px-1">
-                    {currentPage} / {totalPages}
+                  {/* Fixed-width Monospace to completely stop ribbon wobbling/shaking */}
+                  <span className="text-xs font-mono font-bold text-black w-14 text-center inline-block tabular-nums select-none">
+                    {currentPage}/{totalPages}
                   </span>
                   <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
-                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700 disabled:opacity-50"
+                    className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     →
                   </button>
@@ -320,9 +321,9 @@ export default function CropClient() {
               )}
             </div>
 
-            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+            <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
 
-            {/* PURE ICON BUTTONS MATCHING IMAGE 3 */}
+            {/* ROW 2: Icon triggers & download action */}
             <div className="flex items-center gap-2">
               <button
                 onMouseDown={() => setIsHoldingOriginal(true)}
@@ -351,7 +352,7 @@ export default function CropClient() {
           <div className="flex justify-center">
             <div
               ref={containerRef}
-              className="relative inline-block overflow-hidden rounded-3xl border border-slate-300 bg-slate-100 max-w-full shadow-xl select-none touch-none min-h-[300px]"
+              className="relative inline-block overflow-hidden rounded-3xl border border-slate-300 bg-slate-100 max-w-full shadow-xl select-none min-h-[300px]"
             >
               <img
                 src={previewUrl}
@@ -377,22 +378,22 @@ export default function CropClient() {
                   <div 
                     onMouseDown={(e) => handleMouseDown(e, 'nw')}
                     onTouchStart={(e) => handleTouchStart(e, 'nw')}
-                    className="absolute -top-3 -left-3 w-6 h-6 bg-white border-2 border-blue-600 rounded-full cursor-nw-resize shadow-md"
+                    className="absolute -top-3 -left-3 w-6 h-6 bg-white border-2 border-blue-600 rounded-full cursor-nw-resize shadow-md touch-none"
                   />
                   <div 
                     onMouseDown={(e) => handleMouseDown(e, 'ne')}
                     onTouchStart={(e) => handleTouchStart(e, 'ne')}
-                    className="absolute -top-3 -right-3 w-6 h-6 bg-white border-2 border-blue-600 rounded-full cursor-ne-resize shadow-md"
+                    className="absolute -top-3 -right-3 w-6 h-6 bg-white border-2 border-blue-600 rounded-full cursor-ne-resize shadow-md touch-none"
                   />
                   <div 
                     onMouseDown={(e) => handleMouseDown(e, 'sw')}
                     onTouchStart={(e) => handleTouchStart(e, 'sw')}
-                    className="absolute -bottom-3 -left-3 w-6 h-6 bg-white border-2 border-blue-600 rounded-full cursor-sw-resize shadow-md"
+                    className="absolute -bottom-3 -left-3 w-6 h-6 bg-white border-2 border-blue-600 rounded-full cursor-sw-resize shadow-md touch-none"
                   />
                   <div 
                     onMouseDown={(e) => handleMouseDown(e, 'se')}
                     onTouchStart={(e) => handleTouchStart(e, 'se')}
-                    className="absolute -bottom-3 -right-3 w-6 h-6 bg-white border-2 border-blue-600 rounded-full cursor-se-resize shadow-md"
+                    className="absolute -bottom-3 -right-3 w-6 h-6 bg-white border-2 border-blue-600 rounded-full cursor-se-resize shadow-md touch-none"
                   />
                 </div>
               )}

@@ -24,7 +24,6 @@ export default function BgChangerClient() {
     runAiBackgroundRemoval(file);
   }, [file]);
 
-  // Mobile Memory Downscaling (Max 1024px dimension) to prevent crashes
   const downscaleImageForMobile = async (sourceFile: File): Promise<Blob> => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -63,7 +62,6 @@ export default function BgChangerClient() {
     });
   };
 
-  // WebAssembly / WebGL AI Background Removal Engine
   const runAiBackgroundRemoval = async (sourceFile: File) => {
     setIsProcessing(true);
 
@@ -88,7 +86,6 @@ export default function BgChangerClient() {
     }
   };
 
-  // Render Final Canvas Layer with Edge Cleanup Filters & Solid Color Fills
   const applyEdgeAndBackground = async (
     aiBlob: Blob | null,
     colorFill: string,
@@ -177,9 +174,9 @@ export default function BgChangerClient() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Title Header */}
+      {/* Title Header with Mobile Left Corner Alignment */}
       <div>
-        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs inline-block mb-1">
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
           ← Back to Home
         </Link>
         <h1 className="text-2xl sm:text-3xl font-black text-black">AI Photo Background Remover</h1>
@@ -206,9 +203,9 @@ export default function BgChangerClient() {
       {file && previewUrl && (
         <div className="space-y-6">
           
-          {/* IMAGE 3 PURE ICON RIBBON TOOLBAR (ADJUST EDGE AND DESIGN REMOVED) */}
-          <div className="bg-white px-6 py-2.5 rounded-full border border-slate-200 shadow-md flex items-center justify-between gap-4 max-w-4xl mx-auto overflow-x-auto">
-            <div className="flex items-center gap-3 py-1">
+          {/* 2-ROW WRAPPING FLEX RIBBON ON MOBILE */}
+          <div className="bg-white p-3 sm:px-6 sm:py-2.5 rounded-[24px] sm:rounded-full border border-slate-200 shadow-md flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 py-1 flex-1 sm:flex-initial justify-center sm:justify-start">
               <button
                 className="px-4 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-900 shadow-xs flex items-center gap-1.5"
               >
@@ -216,10 +213,10 @@ export default function BgChangerClient() {
               </button>
             </div>
 
-            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+            <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
 
-            {/* PURE ICON BUTTONS MATCHING IMAGE 3 */}
-            <div className="flex items-center gap-2">
+            {/* PURE ICON BUTTONS */}
+            <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-center sm:justify-end">
               <button
                 onMouseDown={() => setIsHoldingOriginal(true)}
                 onMouseUp={() => setIsHoldingOriginal(false)}
@@ -248,7 +245,6 @@ export default function BgChangerClient() {
                 ↷
               </button>
 
-              {/* Blue Download Button */}
               <button
                 onClick={handleDownload}
                 disabled={isProcessing}
@@ -263,10 +259,10 @@ export default function BgChangerClient() {
           {/* MAIN SPLIT WORKSPACE */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center justify-center">
             
-            {/* CENTER PHOTO PREVIEW CARD */}
+            {/* CENTER PHOTO PREVIEW CARD - NO touch-none CLASS TO ALLOW MOBILE PAGE SCROLLING */}
             <div className="md:col-span-7 flex justify-center">
               <div
-                className="relative p-6 rounded-[32px] border border-slate-200 shadow-xl overflow-hidden max-w-full flex items-center justify-center select-none touch-none min-h-[340px]"
+                className="relative p-6 rounded-[32px] border border-slate-200 shadow-xl overflow-hidden max-w-full flex items-center justify-center select-none min-h-[340px]"
                 style={isHoldingOriginal ? { backgroundColor: '#ffffff' } : (bgColor === 'transparent' ? transparentBgStyle : { backgroundColor: bgColor })}
               >
                 <img
@@ -275,7 +271,6 @@ export default function BgChangerClient() {
                   className="max-h-[440px] w-auto block object-contain rounded-2xl shadow-md transition-all duration-200"
                 />
 
-                {/* EXACT USER REQUESTED OVERLAY LOADING TEXT (IMAGE 1) */}
                 {isProcessing && (
                   <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center rounded-[32px] p-6 text-center">
                     <div className="bg-white p-6 rounded-3xl shadow-2xl space-y-3 max-w-xs border border-slate-100">
