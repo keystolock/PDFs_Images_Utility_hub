@@ -279,7 +279,7 @@ export default function CropClient() {
           onClick={() => fileInputRef.current?.click()}
           className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center cursor-pointer hover:bg-slate-100/60 transition-all shadow-xs max-w-lg mx-auto"
         >
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-3 shadow-xs">
+          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-xs">
             ✂️
           </div>
           <p className="text-base font-extrabold text-black">Click or Drag & Drop File Here</p>
@@ -291,65 +291,49 @@ export default function CropClient() {
       {file && previewUrl && (
         <div className="space-y-6">
           
-          {/* WOBBLE-FREE SYMMETRICAL 2-ROW RIBBON */}
-          <div className="bg-white p-4 rounded-[24px] sm:rounded-full border border-slate-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
-            {/* ROW 1: Page selectors & settings */}
-            <div className="flex flex-wrap items-center justify-center gap-2.5">
-              <span className="text-xs font-bold text-slate-700">Crop Ratio: Freeform Box</span>
+          {/* COMPACT CROP TOOL RIBBON (elements in a single, neat inline row, sized according to elements) */}
+          <div className="bg-white px-5 py-2.5 rounded-full border border-slate-200 shadow-md flex items-center justify-center gap-4 w-fit mx-auto flex-wrap sm:flex-nowrap">
+            <span className="text-xs font-bold text-slate-700 whitespace-nowrap">Crop Ratio: Freeform Box</span>
 
-              {fileType === 'pdf' && totalPages > 1 && (
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full shadow-inner">
-                  <button
-                    onClick={handlePrevPage}
-                    disabled={currentPage === 1}
-                    className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
-                  >
-                    ←
-                  </button>
-                  {/* Fixed-width Monospace to completely stop ribbon wobbling/shaking */}
-                  <span className="text-xs font-mono font-bold text-black w-14 text-center inline-block tabular-nums select-none">
-                    {currentPage}/{totalPages}
-                  </span>
-                  <button
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                    className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
-                  >
-                    →
-                  </button>
-                </div>
-              )}
-            </div>
+            {fileType === 'pdf' && totalPages > 1 && (
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full shadow-inner">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  ←
+                </button>
+                <span className="text-xs font-mono font-bold text-black w-14 text-center inline-block tabular-nums select-none">
+                  {currentPage}/{totalPages}
+                </span>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  →
+                </button>
+              </div>
+            )}
 
-            <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div className="h-4 w-px bg-slate-200"></div>
 
-            {/* ROW 2: Icon triggers & download action */}
-            <div className="flex items-center gap-2">
-              <button
-                onMouseDown={() => setIsHoldingOriginal(true)}
-                onMouseUp={() => setIsHoldingOriginal(false)}
-                onMouseLeave={() => setIsHoldingOriginal(false)}
-                onTouchStart={() => setIsHoldingOriginal(true)}
-                onTouchEnd={() => setIsHoldingOriginal(false)}
-                className="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-700 text-base rounded-full flex items-center justify-center transition-all cursor-pointer select-none touch-none"
-                title="Hold to view original photo"
-              >
-                👁️
-              </button>
-
-              <button
-                onClick={handleInstantCropAndDownload}
-                disabled={isProcessing}
-                className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all shadow-md cursor-pointer flex items-center gap-1.5 whitespace-nowrap ml-1"
-              >
-                <span>Download</span>
-                <span className="text-xs">∨</span>
-              </button>
-            </div>
+            <button
+              onMouseDown={() => setIsHoldingOriginal(true)}
+              onMouseUp={() => setIsHoldingOriginal(false)}
+              onMouseLeave={() => setIsHoldingOriginal(false)}
+              onTouchStart={() => setIsHoldingOriginal(true)}
+              onTouchEnd={() => setIsHoldingOriginal(false)}
+              className="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-700 text-base rounded-full flex items-center justify-center transition-all cursor-pointer select-none touch-none"
+              title="Hold to view original photo"
+            >
+              👁️
+            </button>
           </div>
 
           {/* CENTER CROP CANVAS VIEW */}
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center justify-center">
             <div
               ref={containerRef}
               className="relative inline-block overflow-hidden rounded-3xl border border-slate-300 bg-slate-100 max-w-full shadow-xl select-none min-h-[300px]"
@@ -398,10 +382,22 @@ export default function CropClient() {
                 </div>
               )}
             </div>
+
+            {/* RELOCATED DOWNLOAD BUTTON POSITIONED RIGHT BELOW CANVAS PREVIEW */}
+            <div className="mt-4 flex justify-center w-full">
+              <button
+                onClick={handleInstantCropAndDownload}
+                disabled={isProcessing}
+                className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-sm px-8 py-3 rounded-2xl transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+              >
+                <span>Download</span>
+                <span className="text-xs">∨</span>
+              </button>
+            </div>
           </div>
 
           {/* BOTTOM TRAY */}
-          <div className="flex items-center justify-center gap-3 pt-4 border-t border-slate-100">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-slate-100">
             <button
               onClick={() => fileInputRef.current?.click()}
               className="w-12 h-12 bg-slate-100 hover:bg-slate-200 text-black font-black text-2xl rounded-2xl flex items-center justify-center transition-all shadow-xs cursor-pointer"

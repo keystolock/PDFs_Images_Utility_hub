@@ -16,6 +16,9 @@ type DragMode = 'move' | 'nw' | 'ne' | 'sw' | 'se' | null;
 export default function WatermarkClient() {
   const [file, setFile] = useState<File | null>(null);
   const [fileType, setFileType] = useState<'pdf' | 'image' | null>(null);
+  
+  // Working states
+  const [workingPdfBytes, setWorkingPdfBytes] = useState<Uint8Array | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [cleanedPreviewUrl, setCleanedPreviewUrl] = useState<string | null>(null);
 
@@ -82,7 +85,10 @@ export default function WatermarkClient() {
 
           const pdfjsLib = (window as any).pdfjsLib;
           const arrayBuffer = await selected.arrayBuffer();
-          const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const bytes = new Uint8Array(arrayBuffer);
+          setWorkingPdfBytes(bytes);
+
+          const pdfDoc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
           pdfDocRef.current = pdfDoc;
           setTotalPages(pdfDoc.numPages);
           setCurrentPage(1);
@@ -105,6 +111,7 @@ export default function WatermarkClient() {
   const handleReset = () => {
     setFile(null);
     setFileType(null);
+    setWorkingPdfBytes(null);
     setPreviewUrl(null);
     setCleanedPreviewUrl(null);
   };
@@ -175,7 +182,7 @@ export default function WatermarkClient() {
     setIsProcessing(true);
 
     try {
-      if (fileType === 'pdf') {
+      if (fileType === 'pdf' && workingPdfBytes) {
         if (!(window as any).PDFLib) {
           await new Promise((resolve) => {
             const script = document.createElement('script');
@@ -186,8 +193,7 @@ export default function WatermarkClient() {
         }
 
         const { PDFDocument, rgb } = (window as any).PDFLib;
-        const arrayBuffer = await file.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(arrayBuffer);
+        const pdfDoc = await PDFDocument.load(workingPdfBytes.slice(0));
         const pages = pdfDoc.getPages();
 
         pages.forEach((page: any) => {
@@ -208,15 +214,31 @@ export default function WatermarkClient() {
         });
 
         const pdfBytes = await pdfDoc.save();
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        const cleanUrl = URL.createObjectURL(blob);
-        setCleanedPreviewUrl(cleanUrl);
+        setWorkingPdfBytes(pdfBytes);
+
+        // Render page to preview clean updates
+        const pdfjsLib = (window as any).pdfjsLib;
+        const pdfDocRender = await pdfjsLib.getDocument({ data: pdfBytes.slice(0) }).promise;
+        const page = await pdfDocRender.getPage(currentPage);
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+        const pageDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        setCleanedPreviewUrl(pageDataUrl);
       } else if (fileType === 'image' && previewUrl) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
-        img.src = previewUrl;
-        await new Promise((res) => (img.onload = res));
+        
+        await new Promise((resolve, reject) => {
+          img.onload = () => resolve(null);
+          img.onerror = reject;
+          img.src = previewUrl;
+        });
 
         canvas.width = img.width;
         canvas.height = img.height;
@@ -247,33 +269,52 @@ export default function WatermarkClient() {
     }
   };
 
-  // Download Action (downloads ONLY when user clicks!)
+  // Download Action
   const handleDownload = () => {
-    if (!cleanedPreviewUrl || !file) return;
-    const a = document.createElement('a');
-    a.href = cleanedPreviewUrl;
-    a.download = `cleaned_${file.name}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    if (!file) return;
 
-    addHistoryItem({
-      filename: `cleaned_${file.name}`,
-      toolName: 'Watermark Remover',
-      downloadUrl: cleanedPreviewUrl,
-      fileSizeText: 'Cleaned Document',
-    });
+    if (fileType === 'pdf' && workingPdfBytes) {
+      const blob = new Blob([workingPdfBytes as any], { type: 'application/pdf' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `cleaned_${file.name}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      addHistoryItem({
+        filename: `cleaned_${file.name}`,
+        toolName: 'Watermark Remover',
+        downloadUrl,
+        fileSizeText: 'Cleaned PDF Document',
+      });
+    } else if (fileType === 'image' && cleanedPreviewUrl) {
+      const a = document.createElement('a');
+      a.href = cleanedPreviewUrl;
+      a.download = `cleaned_${file.name}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      addHistoryItem({
+        filename: `cleaned_${file.name}`,
+        toolName: 'Watermark Remover',
+        downloadUrl: cleanedPreviewUrl,
+        fileSizeText: 'Cleaned Image',
+      });
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      {/* Title Header */}
-      <div className="text-center space-y-1">
-        <Link href="/" className="text-blue-600 font-semibold hover:underline text-xs inline-block mb-1">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      {/* Title Header with Mobile Left Corner Alignment */}
+      <div>
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
           ← Back to Home
         </Link>
         <h1 className="text-2xl sm:text-3xl font-black text-black">Precision Watermark Remover</h1>
-        <p className="text-slate-500 text-xs">Drag red target box directly on screen to erase watermarks and stamps.</p>
+        <p className="text-slate-500 text-xs mt-0.5">Drag red target box directly on screen to erase watermarks and stamps.</p>
       </div>
 
       <input ref={fileInputRef} type="file" accept="application/pdf,image/*" onChange={handleFileChange} className="hidden" />
@@ -296,44 +337,33 @@ export default function WatermarkClient() {
       {file && previewUrl && (
         <div className="space-y-6">
           
-          {/* TOP TOOLBAR RIBBON WITH BLUE DOWNLOAD BUTTON */}
-          <div className="bg-white p-2.5 rounded-full border border-slate-200 shadow-md flex items-center justify-between gap-2 max-w-2xl mx-auto">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleApplyCleanMask}
-                disabled={isProcessing}
-                className="bg-slate-900 hover:bg-black text-white font-bold text-xs px-4 py-2 rounded-full transition-all cursor-pointer shadow-xs"
-              >
-                {isProcessing ? 'Erasing...' : '✨ Apply Clean Mask'}
-              </button>
-
-              <button
-                onMouseDown={() => setIsHoldingOriginal(true)}
-                onMouseUp={() => setIsHoldingOriginal(false)}
-                onMouseLeave={() => setIsHoldingOriginal(false)}
-                onTouchStart={() => setIsHoldingOriginal(true)}
-                onTouchEnd={() => setIsHoldingOriginal(false)}
-                className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-2 rounded-full transition-all cursor-pointer select-none touch-none"
-              >
-                👁️ Hold Original
-              </button>
-            </div>
-
-            {/* DOWNLOAD BUTTON */}
+          {/* COMPACT WATERMARK RIBBON (sized to elements & centered inline row) */}
+          <div className="bg-white px-5 py-2.5 rounded-full border border-slate-200 shadow-md flex items-center justify-center gap-4 w-fit mx-auto flex-wrap">
             <button
-              onClick={handleDownload}
-              disabled={!cleanedPreviewUrl}
-              className={`font-extrabold text-xs sm:text-sm px-6 py-2 rounded-full transition-all shadow-md flex items-center gap-1 cursor-pointer ${
-                cleanedPreviewUrl ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              }`}
+              onClick={handleApplyCleanMask}
+              disabled={isProcessing}
+              className="bg-slate-900 hover:bg-black text-white font-bold text-xs px-4 py-2 rounded-full transition-all cursor-pointer shadow-xs whitespace-nowrap"
             >
-              <span>Download</span>
-              <span className="text-xs">∨</span>
+              {isProcessing ? 'Erasing...' : '✨ Apply Clean Mask'}
+            </button>
+
+            <div className="h-4 w-px bg-slate-200"></div>
+
+            <button
+              onMouseDown={() => setIsHoldingOriginal(true)}
+              onMouseUp={() => setIsHoldingOriginal(false)}
+              onMouseLeave={() => setIsHoldingOriginal(false)}
+              onTouchStart={() => setIsHoldingOriginal(true)}
+              onTouchEnd={() => setIsHoldingOriginal(false)}
+              className="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-700 text-base rounded-full flex items-center justify-center transition-all cursor-pointer select-none touch-none"
+              title="Hold to view original photo"
+            >
+              👁️
             </button>
           </div>
 
           {/* CENTER INTERACTIVE PREVIEW CANVAS WITH TOUCH-DRAG BOX OVERLAY */}
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center justify-center">
             <div
               ref={containerRef}
               className="relative inline-block overflow-hidden rounded-3xl border border-slate-300 bg-slate-100 max-w-full shadow-xl select-none touch-none"
@@ -374,6 +404,20 @@ export default function WatermarkClient() {
                   />
                 </div>
               )}
+            </div>
+
+            {/* RELOCATED DOWNLOAD BUTTON POSITIONED RIGHT BELOW PREVIEW */}
+            <div className="mt-4 flex justify-center w-full">
+              <button
+                onClick={handleDownload}
+                disabled={!cleanedPreviewUrl}
+                className={`font-extrabold text-xs sm:text-sm px-8 py-3 rounded-2xl transition-all shadow-md flex items-center gap-1.5 cursor-pointer ${
+                  cleanedPreviewUrl ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                <span>Download</span>
+                <span className="text-xs">∨</span>
+              </button>
             </div>
           </div>
 

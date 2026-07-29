@@ -77,10 +77,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
         />
       </head>
-      <body className="bg-white text-slate-900 min-h-screen flex flex-col font-sans selection:bg-blue-100">
+      <body className="bg-slate-50/30 text-slate-900 min-h-screen flex flex-col font-sans selection:bg-blue-100 relative">
+        {/* Modern website-wide blurred glowing background blobs */}
+        <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
+          <div className="absolute top-[-25%] left-[-15%] w-[70vw] h-[70vw] rounded-full bg-blue-500/22 blur-[160px]" />
+          <div className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full bg-purple-500/22 blur-[160px]" />
+          <div className="absolute top-[35%] right-[5%] w-[45vw] h-[45vw] rounded-full bg-cyan-400/16 blur-[140px]" />
+        </div>
+
         <FileProvider>
           {/* Animated Navbar without Pricing */}
-          <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+          <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex justify-between items-center">
               <Link href="/" className="hover:opacity-90 transition-opacity">
                 <div className="flex items-center gap-2.5">
@@ -99,19 +106,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               
               {/* Mobile Quick Action Navigation Bar */}
               <div className="flex md:hidden items-center gap-3">
-                <Link href="/tools/multi-hub" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs">
-                  ⚡ Multi-Hub
-                </Link>
                 <HeaderHistoryDrawer />
               </div>
 
               {/* Desktop Horizontal Utility Navigation */}
               <nav className="hidden md:flex space-x-8 text-[15px] font-semibold items-center">
                 
-                <Link href="/tools/multi-hub" className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-xl text-sm font-bold transition-all border border-blue-200 shadow-xs flex items-center gap-2">
-                  <span>⚡ Multi-Tools Hub</span>
-                </Link>
-
                 {/* Resize Dropdown */}
                 <div className="relative group">
                   <button className="flex items-center gap-1.5 text-black group-hover:text-blue-600 transition-colors duration-200 cursor-pointer py-2">

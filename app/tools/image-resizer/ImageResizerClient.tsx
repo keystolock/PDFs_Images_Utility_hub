@@ -165,12 +165,12 @@ export default function ImageResizerClient() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      {/* Title Header */}
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      {/* Title Header with Mobile Left Corner Alignment */}
+      <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
+        ← Back to Home
+      </Link>
       <div className="text-center space-y-1">
-        <Link href="/" className="text-blue-600 font-semibold hover:underline text-xs inline-block mb-1">
-          ← Back to Home
-        </Link>
         <h1 className="text-2xl sm:text-3xl font-black text-black">Resize Image Pixel Online</h1>
         <p className="text-slate-500 text-xs">Fast, free client-side image resizer. 100% private in-browser optimization.</p>
       </div>

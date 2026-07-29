@@ -44,7 +44,7 @@ export default function HeaderHistoryDrawer() {
             onClick={() => setIsOpen(false)}
           />
 
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300">
+          <div className="relative w-full max-w-md bg-white h-screen shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300">
             {/* Drawer Header */}
             <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <div>

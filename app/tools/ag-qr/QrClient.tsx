@@ -150,7 +150,7 @@ export default function QrClient() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-8">
       <div>
-        <Link href="/" className="text-blue-600 font-semibold hover:underline cursor-pointer text-sm mb-4 inline-block">
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
           ← Back to Home
         </Link>
         <h1 className="text-3xl sm:text-4xl font-black text-black">Age Calculator & QR Code Generator</h1>

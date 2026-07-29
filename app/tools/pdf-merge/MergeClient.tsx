@@ -121,7 +121,7 @@ export default function MergeClient() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <div>
-        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs mb-1 inline-block">
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
           ← Back to Home
         </Link>
         <h1 className="text-2xl sm:text-3xl font-black text-black">PDF Merge & Split</h1>

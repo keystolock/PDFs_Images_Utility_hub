@@ -510,16 +510,16 @@ export default function PdfEditorClient() {
         </div>
       )}
 
-      {/* WOBBLE-FREE SYMMETRICAL 2-ROW RIBBON */}
+      {/* COMPACT PDF EDITOR RIBBON (elements in a single centered inline row, sized according to elements) */}
       {file && previewUrl && (
         <div className="space-y-6">
           
-          <div className="bg-white p-4 rounded-[24px] sm:rounded-full border border-slate-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
+          <div className="bg-white px-5 py-3 rounded-[24px] sm:rounded-full border border-slate-200 shadow-md flex items-center justify-center gap-3 w-fit mx-auto flex-wrap">
             {/* ROW 1: Page Navigation and Primary Tool Selectors */}
-            <div className="flex flex-wrap items-center justify-center gap-2.5">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <button
                 onClick={() => setShowThumbnails(!showThumbnails)}
-                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   showThumbnails ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -527,22 +527,21 @@ export default function PdfEditorClient() {
               </button>
 
               {fileType === 'pdf' && totalPages > 1 && (
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full shadow-inner">
+                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full shadow-inner">
                   <button
                     onClick={handlePrevPage}
                     disabled={currentPage === 1 || isProcessing}
-                    className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="w-5.5 h-5.5 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     ←
                   </button>
-                  {/* Fixed-width Monospace to completely stop ribbon wobbling/shaking */}
-                  <span className="text-xs font-mono font-bold text-black w-14 text-center inline-block tabular-nums select-none">
+                  <span className="text-[11px] font-mono font-bold text-black w-12 text-center inline-block tabular-nums select-none">
                     {currentPage}/{totalPages}
                   </span>
                   <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages || isProcessing}
-                    className="w-6 h-6 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-xs font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="w-5.5 h-5.5 bg-white hover:bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-extrabold text-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     →
                   </button>
@@ -551,7 +550,7 @@ export default function PdfEditorClient() {
 
               <button
                 onClick={() => setActiveTool('move')}
-                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeTool === 'move' ? 'bg-slate-100 text-slate-900 shadow-xs' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -560,7 +559,7 @@ export default function PdfEditorClient() {
 
               <button
                 onClick={() => setActiveTool('eraser')}
-                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeTool === 'eraser' ? 'bg-slate-100 text-slate-900 shadow-xs' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -569,7 +568,7 @@ export default function PdfEditorClient() {
 
               <button
                 onClick={() => setActiveTool('highlight')}
-                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeTool === 'highlight' ? 'bg-slate-100 text-slate-900 shadow-xs' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -577,14 +576,13 @@ export default function PdfEditorClient() {
               </button>
             </div>
 
-            {/* Vertical separator visible only on desktop */}
-            <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div className="h-4 w-px bg-slate-200"></div>
 
-            {/* ROW 2: Overlay Editors, done bake, and Download actions */}
-            <div className="flex flex-wrap items-center justify-center gap-2.5">
+            {/* ROW 2: Overlay Editors, done bake actions */}
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <button
                 onClick={() => setActiveTool('addText')}
-                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeTool === 'addText' ? 'bg-slate-100 text-slate-900 shadow-xs' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -593,7 +591,7 @@ export default function PdfEditorClient() {
 
               <button
                 onClick={() => setActiveTool('signature')}
-                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeTool === 'signature' ? 'bg-slate-100 text-slate-900 shadow-xs' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -603,16 +601,9 @@ export default function PdfEditorClient() {
               <button
                 onClick={handleApplyEdits}
                 disabled={isProcessing}
-                className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-5 py-2 rounded-full transition-all shadow-xs cursor-pointer"
+                className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-4 py-1.5 rounded-full transition-all shadow-xs cursor-pointer"
               >
                 {isProcessing ? '...' : '✓ Done'}
-              </button>
-
-              <button
-                onClick={handleDownload}
-                className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all shadow-md cursor-pointer whitespace-nowrap"
-              >
-                Download ∨
               </button>
             </div>
           </div>
@@ -757,7 +748,7 @@ export default function PdfEditorClient() {
             )}
 
             {/* DOCUMENT CANVAS VIEW */}
-            <div className={`${showThumbnails && fileType === 'pdf' && totalPages > 1 ? 'md:col-span-9' : 'md:col-span-12'} flex justify-center`}>
+            <div className={`${showThumbnails && fileType === 'pdf' && totalPages > 1 ? 'md:col-span-9' : 'md:col-span-12'} flex flex-col items-center justify-center`}>
               <div
                 ref={containerRef}
                 className="relative inline-block overflow-hidden rounded-3xl border border-slate-300 bg-slate-100 max-w-full shadow-xl select-none min-h-[300px]"
@@ -869,12 +860,22 @@ export default function PdfEditorClient() {
                   </div>
                 )}
               </div>
+
+              {/* RELOCATED DOWNLOAD BUTTON POSITIONED RIGHT BELOW CANVAS PREVIEW */}
+              <div className="mt-4 flex justify-center w-full">
+                <button
+                  onClick={handleDownload}
+                  className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-sm px-8 py-3 rounded-2xl transition-all shadow-md cursor-pointer whitespace-nowrap"
+                >
+                  Download ∨
+                </button>
+              </div>
             </div>
 
           </div>
 
           {/* BOTTOM TRAY */}
-          <div className="flex items-center justify-center gap-3 pt-4 border-t border-slate-100">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-slate-100">
             <button
               onClick={() => fileInputRef.current?.click()}
               className="w-12 h-12 bg-slate-100 hover:bg-slate-200 text-black font-black text-2xl rounded-2xl flex items-center justify-center transition-all shadow-xs cursor-pointer"

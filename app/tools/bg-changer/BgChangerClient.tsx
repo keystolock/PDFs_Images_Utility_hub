@@ -203,20 +203,17 @@ export default function BgChangerClient() {
       {file && previewUrl && (
         <div className="space-y-6">
           
-          {/* 2-ROW WRAPPING FLEX RIBBON ON MOBILE */}
-          <div className="bg-white p-3 sm:px-6 sm:py-2.5 rounded-[24px] sm:rounded-full border border-slate-200 shadow-md flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 py-1 flex-1 sm:flex-initial justify-center sm:justify-start">
-              <button
-                className="px-4 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-900 shadow-xs flex items-center gap-1.5"
-              >
-                🖼️ Background
-              </button>
-            </div>
+          {/* COMPACT BG CHANGER TOOL RIBBON (elements in single row, sized to elements) */}
+          <div className="bg-white px-5 py-2.5 rounded-full border border-slate-200 shadow-md flex items-center justify-center gap-4 w-fit mx-auto flex-wrap sm:flex-nowrap">
+            <button
+              className="px-4 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-900 shadow-xs flex items-center gap-1.5"
+            >
+              🖼️ Background
+            </button>
 
-            <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div className="h-4 w-px bg-slate-200"></div>
 
-            {/* PURE ICON BUTTONS */}
-            <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-center sm:justify-end">
+            <div className="flex items-center gap-2">
               <button
                 onMouseDown={() => setIsHoldingOriginal(true)}
                 onMouseUp={() => setIsHoldingOriginal(false)}
@@ -244,25 +241,16 @@ export default function BgChangerClient() {
               >
                 ↷
               </button>
-
-              <button
-                onClick={handleDownload}
-                disabled={isProcessing}
-                className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all shadow-md cursor-pointer flex items-center gap-1.5 whitespace-nowrap ml-1"
-              >
-                <span>Download</span>
-                <span className="text-xs">∨</span>
-              </button>
             </div>
           </div>
 
           {/* MAIN SPLIT WORKSPACE */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center justify-center">
             
-            {/* CENTER PHOTO PREVIEW CARD - NO touch-none CLASS TO ALLOW MOBILE PAGE SCROLLING */}
-            <div className="md:col-span-7 flex justify-center">
+            {/* CENTER PHOTO PREVIEW CARD */}
+            <div className="md:col-span-7 flex flex-col items-center">
               <div
-                className="relative p-6 rounded-[32px] border border-slate-200 shadow-xl overflow-hidden max-w-full flex items-center justify-center select-none min-h-[340px]"
+                className="relative p-6 rounded-[32px] border border-slate-200 shadow-xl overflow-hidden max-w-full flex items-center justify-center select-none min-h-[340px] w-full"
                 style={isHoldingOriginal ? { backgroundColor: '#ffffff' } : (bgColor === 'transparent' ? transparentBgStyle : { backgroundColor: bgColor })}
               >
                 <img
@@ -282,6 +270,18 @@ export default function BgChangerClient() {
                   </div>
                 )}
               </div>
+
+              {/* RELOCATED DOWNLOAD BUTTON POSITIONED RIGHT BELOW PREVIEW */}
+              <div className="mt-4 flex justify-center w-full">
+                <button
+                  onClick={handleDownload}
+                  disabled={isProcessing}
+                  className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-sm px-8 py-3 rounded-2xl transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>Download</span>
+                  <span className="text-xs">∨</span>
+                </button>
+              </div>
             </div>
 
             {/* SIDE PANEL: SWATCH COLOR GRID */}
@@ -298,7 +298,7 @@ export default function BgChangerClient() {
                       applyEdgeAndBackground(rawAiBlob, 'transparent', edgeMode);
                     }}
                     className={`h-12 rounded-2xl border-2 flex items-center justify-center text-lg font-bold transition-all cursor-pointer shadow-xs ${
-                      bgColor === 'transparent' ? 'border-blue-600 ring-2 ring-blue-300' : 'border-slate-200'
+                      bgColor === 'transparent' ? 'border-blue-600 scale-105 ring-2 ring-blue-300' : 'border-slate-200'
                     }`}
                     style={transparentBgStyle}
                     title="Transparent Background"
@@ -344,7 +344,7 @@ export default function BgChangerClient() {
           </div>
 
           {/* BOTTOM CONTROL TRAY */}
-          <div className="flex items-center justify-center gap-3 pt-4 border-t border-slate-100">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-slate-100">
             <button
               onClick={() => fileInputRef.current?.click()}
               className="w-12 h-12 bg-slate-100 hover:bg-slate-200 text-black font-black text-2xl rounded-2xl flex items-center justify-center transition-all shadow-xs cursor-pointer"

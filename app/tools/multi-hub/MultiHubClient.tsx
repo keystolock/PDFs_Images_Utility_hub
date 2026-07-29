@@ -46,6 +46,46 @@ export default function MultiHubClient() {
         setOrigRatio(img.width / img.height);
       };
       img.src = url;
+    } else if (activeFile.type === 'application/pdf') {
+      const renderFirstPage = async () => {
+        try {
+          if (!(window as any).pdfjsLib) {
+            await new Promise((resolve) => {
+              const script = document.createElement('script');
+              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+              script.onload = () => {
+                (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc =
+                  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                resolve(null);
+              };
+              document.body.appendChild(script);
+            });
+          }
+
+          const pdfjsLib = (window as any).pdfjsLib;
+          const arrayBuffer = await activeFile.arrayBuffer();
+          const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer.slice(0) });
+          const pdfDoc = await loadingTask.promise;
+          const page = await pdfDoc.getPage(1);
+          
+          const viewport = page.getViewport({ scale: 1.0 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          await page.render({ canvasContext: context, viewport }).promise;
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          setPreviewUrl(dataUrl);
+
+          setWidth(viewport.width.toString());
+          setHeight(viewport.height.toString());
+          setOrigRatio(viewport.width / viewport.height);
+        } catch (e) {
+          console.error('PDF instant preview generation error:', e);
+        }
+      };
+      renderFirstPage();
     } else {
       setPreviewUrl(null);
     }

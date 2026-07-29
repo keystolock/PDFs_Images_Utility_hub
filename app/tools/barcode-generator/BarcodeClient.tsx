@@ -124,7 +124,7 @@ export default function BarcodeClient() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
       {/* Page Title Header */}
       <div>
-        <Link href="/" className="text-blue-600 font-semibold hover:underline text-xs mb-2 inline-block">
+        <Link href="/" className="text-blue-600 font-bold hover:underline text-xs block text-left mb-2 w-fit">
           ← Back to Home
         </Link>
         <h1 className="text-3xl sm:text-4xl font-black text-black">Barcode Generator</h1>
